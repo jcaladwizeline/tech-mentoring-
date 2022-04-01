@@ -10,21 +10,13 @@ export const Video = objectType({
     },
 });
 
-let videos: NexusGenObjects["Video"][] = [
-    {
-        id:1,
-        url:"test.com",
-        description:"testing"
-    },
-]
-
 export const VideoQuery = extendType({
     type: "Query",
     definition(t){
         t.nonNull.list.nonNull.field("feed", {
             type: "Video",
             resolve(parent, args, context, info){
-                return videos;
+                return context.prisma.video.findMany();
             }
         })
     }
@@ -41,17 +33,15 @@ export const VideoMutation = extendType({
             },
 
             resolve(parent, args, context){
-                const {description, url} = args;
-
-                let idCount = videos.length + 1;
-                const video = {
-                    id: idCount,
-                    description: description,
-                    url: url
-                }
-                videos.push(video);
-                return video;
-            }
+                const newVideo = context.prisma.video.create({   // 2
+                    data: {
+                        description: args.description,
+                        url: args.url,
+                    },
+                });
+                return newVideo;
+            },
+            
         })
     }
 })
